@@ -1,11 +1,24 @@
 import "dotenv/config";
 import app from "./app";
-import mongoose from "mongoose";
+import { connectDB } from "./db/connect";
+import { env } from "./configs/env";
 
-const port = process.env.PORT || 4000;
+const port = env.APP_PORT;
+const mongoUri = env.MONGODB_URI;
+const dbName = env.DATABASE_NAME;
 
-async function main() {
-  await mongoose.connect(process.env.MONGO_URI as string);
-  app.listen(port, () => console.log(`API on http://localhost:${port}`));
+async function startServer() {
+  try {
+    await connectDB(`${mongoUri}${dbName ? "/" + dbName : ""}`);
+
+    app.listen(port, () => {
+      console.log(`Connected to MongoDB: ${dbName}`);
+      console.log(`API server running at: ${env.APP_HOST}:${port}`);
+    });
+  } catch (err) {
+    console.error("Failed to start server:", err);
+    process.exit(1);
+  }
 }
-main().catch(err => { console.error(err); process.exit(1); });
+
+startServer();
