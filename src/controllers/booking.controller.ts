@@ -1,13 +1,17 @@
+import { Response } from "express";
 import Booking from "../models/Booking";
 import { notFound } from "../utils/ApiError";
+import { AuthRequest } from "../middlewares/auth.middleware";
 
-export const listMyBookings = async (userId: string) => {
-  const list = await Booking.find({ user_id: userId }).sort({ createdAt: -1 });
-  return list;
+/** GET /bookings — danh sách booking của user hiện tại */
+export const listMyBookings = async (req: AuthRequest, res: Response) => {
+  const list = await Booking.find({ user_id: req.user!.userId }).sort({ createdAt: -1 });
+  res.json(list);
 };
 
-export const getMyBooking = async (userId: string, id: string) => {
-  const booking = await Booking.findOne({ _id: id, user_id: userId });
+/** GET /bookings/:id — chi tiết 1 booking của user hiện tại */
+export const getMyBooking = async (req: AuthRequest, res: Response) => {
+  const booking = await Booking.findOne({ _id: req.params.id, user_id: req.user!.userId });
   if (!booking) throw notFound("Booking not found");
-  return booking;
+  res.json(booking);
 };

@@ -12,7 +12,9 @@ const envSchema = z.object({
   APP_PORT: z.coerce.number().default(5124),
   CLIENT_URL: z.string(),
   JWT_SECRET: z.string().min(8, "JWT_SECRET is required and must be at least 8 characters"),
-  STRIPE_SECRET_KEY: z.string().optional()
+  PAYOS_CLIENT_ID: z.string(),
+  PAYOS_API_KEY: z.string(),
+  PAYOS_CHECKSUM_KEY: z.string(),
 });
 
 export const env = envSchema.parse(process.env);

@@ -1,16 +1,12 @@
 import { Router } from "express";
 import { asyncHandler } from "../utils/asyncHandler";
 import * as Destinations from "../controllers/destination.controller";
+import { requireAuth, requireAdmin } from "../middlewares/auth.middleware";
 
 const r = Router();
 
-r.get("/", asyncHandler(async (req, res) => {
-  res.json(await Destinations.listDestinations(req.query));
-}));
-
-r.post("/", asyncHandler(async (req, res) => {
-  const created = await Destinations.createDestination(req.body);
-  res.status(201).json(created);
-}));
+r.get("/",asyncHandler(Destinations.listDestinations));
+r.get("/:id",asyncHandler(Destinations.getDestination));
+r.post("/",requireAuth, requireAdmin,asyncHandler(Destinations.createDestination));
 
 export default r;

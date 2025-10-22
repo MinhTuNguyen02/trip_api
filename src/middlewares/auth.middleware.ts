@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
+import User from "../models/User";
 
 export interface AuthRequest extends Request {
   user?: { userId: string; email: string };
@@ -17,4 +18,17 @@ export function requireAuth(req: AuthRequest, res: Response, next: NextFunction)
   } catch {
     return res.status(401).json({ error: "Invalid or expired token" });
   }
+}
+
+export async function requireAdmin(req: AuthRequest, res: Response, next: NextFunction) {
+  if (!req.user?.userId) return res.status(401).json({ error: "Unauthorized" });
+
+  const user = await User.findById(req.user.userId).select("role");
+  if (!user) return res.status(401).json({ error: "User not found" });
+
+  if (user.role !== "admin") {
+    return res.status(403).json({ error: "Admin privileges required" });
+  }
+
+  next();
 }

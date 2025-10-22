@@ -1,7 +1,10 @@
 import { Router } from "express";
 import { asyncHandler } from "../utils/asyncHandler";
-import * as AI from "../controllers/ai.controller";
+import * as AIController from "../controllers/ai.controller";
 
 const r = Router();
-r.post("/itinerary", asyncHandler(async (req, res) => res.json(await AI.buildItinerary(req.body))));
+
+// Sinh gợi ý lịch trình bằng AI logic (từ tour & destination)
+r.post("/itinerary", asyncHandler(AIController.buildItinerary));
+
 export default r;

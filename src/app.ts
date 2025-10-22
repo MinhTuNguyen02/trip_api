@@ -4,8 +4,12 @@ import morgan from "morgan";
 import routes from "./routes";
 import { errorHandler } from "./middlewares/error";
 import { env } from "./configs/env";
+import payosWebhook from "./routes/webhooks/payos";
 
 const app = express();
+
+app.use("/api/webhooks/payos", express.json(), payosWebhook);
+
 app.use(cors({ origin: env.CLIENT_URL, credentials: true }));
 app.use(express.json());
 app.use(morgan("dev"));

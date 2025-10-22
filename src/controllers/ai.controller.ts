@@ -1,26 +1,31 @@
+import { Request, Response } from "express";
+import { z } from "zod";
 import Tour from "../models/Tour";
 import Destination from "../models/Destination";
-import { z } from "zod";
 import { badRequest, notFound } from "../utils/ApiError";
 
+/** schema validate đầu vào */
 const planSchema = z.object({
   destinationId: z.string().min(8),
-  startDate: z.string(),      // ISO date string
+  startDate: z.string(), // ISO date string
   days: z.number().int().min(2).max(5),
   budget: z.number().int().positive().optional(),
   prefs: z.array(z.enum(["biển", "ẩm thực", "thiên nhiên", "đêm"])).optional(),
 });
 
-export const buildItinerary = async (body: unknown) => {
-  const input = planSchema.parse(body);
+/** POST /ai/itinerary */
+export const buildItinerary = async (req: Request, res: Response) => {
+  const input = planSchema.parse(req.body);
 
   const [dest, tours] = await Promise.all([
     Destination.findById(input.destinationId),
     Tour.find({ destination_id: input.destinationId }).sort({ price: 1 }).limit(50),
   ]);
+
   if (!dest) throw notFound("Destination not found");
   if (!tours.length) throw badRequest("No tours available for this destination");
 
+  // --- Build simple AI itinerary logic ---
   const perDay = Math.min(2, Math.max(1, Math.floor(tours.length / input.days) || 1));
   const plan: any[] = [];
   let idx = 0, totalCost = 0;
@@ -39,6 +44,7 @@ export const buildItinerary = async (body: unknown) => {
       });
       totalCost += Number(t.price || 0);
     }
+
     plan.push({
       day: d,
       slots: [
@@ -50,7 +56,8 @@ export const buildItinerary = async (body: unknown) => {
     });
   }
 
-  return {
+  // --- Kết quả cuối cùng ---
+  const result = {
     destinationId: input.destinationId,
     startDate: input.startDate,
     days: input.days,
@@ -60,6 +67,8 @@ export const buildItinerary = async (body: unknown) => {
       days: input.days,
       est_cost: totalCost,
       budget_ok: input.budget ? totalCost <= input.budget : undefined,
-    }
+    },
   };
+
+  res.json(result);
 };

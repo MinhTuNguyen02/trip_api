@@ -1,43 +1,25 @@
-import { Schema, model } from "mongoose";
+// src/models/Destination.ts
+import { Schema, model, Types, Document } from "mongoose";
 
-/**
- * Destination: Điểm đến (ví dụ: Đà Nẵng, Đà Lạt, Phú Quốc)
- * - Dùng cho việc nhóm Tour & gợi ý lịch trình
- */
+export interface IDestination extends Document {
+  _id: Types.ObjectId;
+  code: string;
+  name: string;
+  region?: string;
+  description?: string;
+  images: string[];
+  is_active: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
-const destinationSchema = new Schema(
-  {
-    code: {
-      type: String,
-      required: true,
-      unique: true,
-      uppercase: true,
-      trim: true
-    },
-    name: {
-      type: String,
-      required: true,
-      trim: true
-    },
-    region: {
-      type: String, // Miền Bắc / Miền Trung / Miền Nam / Tây Nguyên
-      default: "Miền Trung"
-    },
-    description: {
-      type: String,
-      default: ""
-    },
-    images: {
-      type: [String],
-      default: []
-    },
-    is_active: {
-      type: Boolean,
-      default: true
-    }
-  },
-  { timestamps: true }
-);
+const destinationSchema = new Schema<IDestination>({
+  code: { type: String, required: true, unique: true, uppercase: true, trim: true },
+  name: { type: String, required: true, trim: true },
+  region: String,
+  description: String,
+  images: { type: [String], default: [] },
+  is_active: { type: Boolean, default: true }
+}, { timestamps: true });
 
-const Destination = model("Destination", destinationSchema);
-export default Destination;
+export default model<IDestination>("Destination", destinationSchema);

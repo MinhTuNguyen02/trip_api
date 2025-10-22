@@ -7,6 +7,10 @@ import authRouter from "./auth";
 import cartRouter from "./cart";
 import checkoutRouter from "./checkout";
 import bookingRouter from "./bookings";
+import poiRouter from "./pois";
+import itineraryRouter from "./itineraries";
+import paymentRouter from "./payments";
+import flightQuoteRouter from "./flight-quotes";
 
 const router = Router();
 
@@ -22,6 +26,11 @@ router.use("/auth", authRouter);
 router.use("/cart", cartRouter);
 router.use("/checkout", checkoutRouter);
 router.use("/bookings", bookingRouter);
+
+router.use("/pois", poiRouter);
+router.use("/itineraries", itineraryRouter);
+router.use("/payments", paymentRouter);
+router.use("/flight-quotes", flightQuoteRouter);
 
 
 export default router;
