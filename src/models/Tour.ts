@@ -3,6 +3,7 @@ import { Schema, model, Types, Document } from "mongoose";
 export interface ITour extends Document {
   _id: Types.ObjectId;
   destination_id: Types.ObjectId;
+  departure_id: Types.ObjectId;
   title: string;
   summary: string;
   description?: string;
@@ -23,6 +24,7 @@ export interface ITour extends Document {
 const tourSchema = new Schema<ITour>(
   {
     destination_id: { type: Schema.Types.ObjectId, ref: "Destination", required: true },
+    departure_id: { type: Schema.Types.ObjectId, ref: "Destination", required: true },
     title: { type: String, required: true, trim: true },
     summary: { type: String, required: true },
     description: String,

@@ -17,14 +17,16 @@ const objectIdStr = z.string().min(8, "ObjectId không hợp lệ");
 // ---------- LIST ----------
 /** GET /tours */
 export const listTours = async (req: Request, res: Response) => {
-  const { destination, minPrice, maxPrice } = req.query as {
+  const { destination, departure, minPrice, maxPrice } = req.query as {
     destination?: string;
+    departure?: string;
     minPrice?: string;
     maxPrice?: string;
   };
 
   const q: any = {};
   if (destination && destination.trim()) q.destination_id = destination;
+  if (departure && departure.trim()) q.departure_id = departure;
   if (minPrice) q.price = { ...(q.price || {}), $gte: Number(minPrice) };
   if (maxPrice) q.price = { ...(q.price || {}), $lte: Number(maxPrice) };
 
@@ -45,6 +47,7 @@ export const getTour = async (req: Request, res: Response) => {
 // ---------- Schemas ----------
 const createBody = z.object({
   destination_id: objectIdStr,
+  departure_id: objectIdStr,
   title: z.string().min(2),
   summary: z.string().min(2),
   description: z.string().optional(),
@@ -61,6 +64,7 @@ const createBody = z.object({
 const updateSchema = z
   .object({
     destination_id: objectIdStr.optional(),
+    departure_id: objectIdStr.optional(),
     title: z.string().optional(),
     summary: z.string().optional(),
     description: z.string().optional(),
@@ -97,6 +101,7 @@ export const createTour = async (req: Request, res: Response) => {
 
   const created = await Tour.create({
     destination_id: data.destination_id,
+    departure_id: data.departure_id,
     title: data.title,
     summary: data.summary,
     description: data.description,
@@ -126,6 +131,7 @@ export const updateTour = async (req: Request, res: Response) => {
   }
 
   if (typeof data.destination_id !== "undefined") doc.destination_id = data.destination_id as any;
+  if (typeof data.departure_id !== "undefined") doc.departure_id = data.departure_id as any;
   if (typeof data.title !== "undefined") doc.title = data.title;
   if (typeof data.summary !== "undefined") doc.summary = data.summary;
   if (typeof data.description !== "undefined") doc.description = data.description;
