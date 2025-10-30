@@ -1,13 +1,10 @@
 import mongoose from "mongoose";
+mongoose.set("debug", true);
 
-/**
- * Kết nối đến MongoDB thông qua Mongoose.
- * Gọi hàm này trong server.ts trước khi lắng nghe port.
- */
-export async function connectDB(uri: string) {
+export async function connectDB(uri: string, dbName?: string) {
   try {
-    await mongoose.connect(uri);
-    console.log("MongoDB connected successfully!");
+    await mongoose.connect(uri, { dbName });
+    console.log("MongoDB connected:", mongoose.connection.name); 
   } catch (error) {
     console.error("MongoDB connection failed:", error);
     process.exit(1);

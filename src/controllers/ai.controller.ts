@@ -40,7 +40,6 @@ export const buildItinerary = async (req: Request, res: Response) => {
         title: t.title,
         duration_hr: t.duration_hr,
         price: t.price,
-        start_time: t.start_times?.[0] || "08:00",
       });
       totalCost += Number(t.price || 0);
     }

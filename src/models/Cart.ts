@@ -5,6 +5,7 @@ export interface ICartItem {
   _id: Types.ObjectId;         // <-- thêm dòng này
   type: "tour";
   ref_id: Types.ObjectId;      // luôn là ObjectId
+  option_id: Types.ObjectId;
   qty: number;
   unit_price: number;
 }
@@ -18,6 +19,7 @@ const cartItemSchema = new Schema<ICartItem>(
   {
     type: { type: String, enum: ["tour"], required: true },
     ref_id: { type: Schema.Types.ObjectId, ref: "Tour", required: true },
+    option_id: { type: Schema.Types.ObjectId, ref: "TourOption", required: true },
     qty: { type: Number, required: true },
     unit_price: { type: Number, required: true }
   },
@@ -31,5 +33,5 @@ const cartSchema = new Schema<ICart>(
   },
   { timestamps: true }
 );
-
+cartSchema.index({ user_id: 1 });
 export default model<ICart>("Cart", cartSchema);

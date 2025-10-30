@@ -11,13 +11,14 @@ import poiRouter from "./pois";
 import itineraryRouter from "./itineraries";
 import paymentRouter from "./payments";
 import flightQuoteRouter from "./flight-quotes";
-
+import tourOptionRoutes from "./tourOption"
 const router = Router();
 
 /** Nhóm public routes trước */
 router.use("/health", healthRouter);
 router.use("/destinations", destinationRouter);
 router.use("/tours", tourRouter);
+router.use("/tour-options", tourOptionRoutes);
 
 /** AI itinerary (gợi ý lịch trình 2–5 ngày) */
 router.use("/ai", aiRouter);
