@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-mongoose.set("debug", true);
 
 export async function connectDB(uri: string, dbName?: string) {
   try {

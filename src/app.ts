@@ -4,17 +4,12 @@ import morgan from "morgan";
 import routes from "./routes";
 import { errorHandler } from "./middlewares/error";
 import { env } from "./configs/env";
-// import payosWebhook from "./routes/webhooks/payos";
-import { handlePayOSWebhook } from "./controllers/checkout.controller";
 import uploadRouter from "./routes/upload";
+import payosWebhookRouter  from "./routes/webhooks/payos"
 
 const app = express();
 
-app.post(
-    "/api/webhooks/payos",
-    express.raw({ type: "application/json" }),
-    (req, res) => handlePayOSWebhook(req as any, res)
-  );
+app.use("/api/webhooks/payos", express.json({ type: "*/*" }), payosWebhookRouter);
 
 app.use(cors({ origin: env.CLIENT_URL, credentials: true }));
 app.use(express.json());
