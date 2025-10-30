@@ -12,6 +12,7 @@ import itineraryRouter from "./itineraries";
 import paymentRouter from "./payments";
 import flightQuoteRouter from "./flight-quotes";
 import tourOptionRoutes from "./tourOption"
+import adminRoutes from "./adminBookings";
 const router = Router();
 
 /** Nhóm public routes trước */
@@ -24,6 +25,7 @@ router.use("/tour-options", tourOptionRoutes);
 router.use("/ai", aiRouter);
 
 router.use("/auth", authRouter);
+router.use("/admin", adminRoutes);
 router.use("/cart", cartRouter);
 router.use("/checkout", checkoutRouter);
 router.use("/bookings", bookingRouter);
