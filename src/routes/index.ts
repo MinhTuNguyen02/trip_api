@@ -13,6 +13,7 @@ import paymentRouter from "./payments";
 import flightQuoteRouter from "./flight-quotes";
 import tourOptionRoutes from "./tourOption"
 import adminRoutes from "./adminBookings";
+import adminDashboardRouter from "./adminDashboard"
 const router = Router();
 
 /** Nhóm public routes trước */
@@ -26,6 +27,7 @@ router.use("/ai", aiRouter);
 
 router.use("/auth", authRouter);
 router.use("/admin", adminRoutes);
+router.use("/dashboard", adminDashboardRouter);
 router.use("/cart", cartRouter);
 router.use("/checkout", checkoutRouter);
 router.use("/bookings", bookingRouter);

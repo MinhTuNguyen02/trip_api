@@ -126,18 +126,18 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
 
 // ----- CHANGE PASSWORD (NEW) -----
 const changePasswordSchema = z.object({
-  old_password: z.string().min(6),
+  current_password: z.string().min(6),
   new_password: z.string().min(6),
 });
 
 /** POST /auth/change-password */
 export const changePassword = async (req: AuthRequest, res: Response) => {
-  const { old_password, new_password } = changePasswordSchema.parse(req.body);
+  const { current_password, new_password } = changePasswordSchema.parse(req.body);
 
   const user = await User.findById(req.user!.userId);
   if (!user) throw notFound("User not found");
 
-  const ok = await bcrypt.compare(old_password, user.password_hash);
+  const ok = await bcrypt.compare(current_password, user.password_hash);
   if (!ok) throw badRequest("Mật khẩu hiện tại không đúng");
 
   const same = await bcrypt.compare(new_password, user.password_hash);
