@@ -6,34 +6,33 @@ export type PaymentStatus  = "unpaid"  | "paid"      | "failed"    | "refunded";
 
 export interface IBooking extends Document {
   _id: Types.ObjectId;
-  user_id: Types.ObjectId;               // -> User
+  user_id: Types.ObjectId;               
 
   // ---- 1 booking = 1 tour option ----
-  tour_id: Types.ObjectId;               // -> Tour
-  option_id: Types.ObjectId;             // -> TourOption
-  start_date: Date;                      // YYYY-MM-DD (UTC 00:00)
-  start_time?: string;                   // "HH:mm"
-  qty: number;                           // số vé/người
-  unit_price: number;                    // giá tại thời điểm đặt
-  total: number;                         // server tính = qty * unit_price
+  tour_id: Types.ObjectId;               
+  option_id: Types.ObjectId;             
+  start_date: Date;                      
+  start_time?: string;                   
+  qty: number;                           
+  unit_price: number;                    
+  total: number;                         
 
   // Snapshot chống thay đổi dữ liệu gốc
   snapshot_title?: string;
-  snapshot_destination_id?: Types.ObjectId;   // -> Destination
+  snapshot_destination_id?: Types.ObjectId;   
   snapshot_destination_name?: string;
 
   // Trạng thái
-  status: BookingStatus;                 // tiến trình dịch vụ
-  payment_status: PaymentStatus;         // tiến trình thanh toán
-  payment_id?: Types.ObjectId;           // -> Payment
+  status: BookingStatus;                 
+  payment_status: PaymentStatus;         
+  payment_id?: Types.ObjectId;           
 
   // Thông tin liên hệ & ghi chú
   contact_name?: string;
   contact_phone?: string;
   note?: string;
-
-  // NEW: điểm đón / hướng dẫn đón khách
-  pickup_note?: string;                  // vd: “lên xe của Raumanian ở bến xe gần nhất”
+  
+  pickup_note?: string;                  
 
   createdAt: Date;
   updatedAt: Date;

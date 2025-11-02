@@ -3,10 +3,10 @@ import { Schema, model, Types, Document } from "mongoose";
 
 export interface ITicket extends Document {
   _id: Types.ObjectId;
-  booking_id: Types.ObjectId; // -> Booking
+  booking_id: Types.ObjectId; 
   passenger?: { name?: string; phone?: string; address?: string };
-  code: string;               // mã vé ngắn, unique
-  qr_payload: string;         // nội dung QR (có thể chính là code)
+  code: string;               
+  qr_payload: string;         
   status: "valid" | "used" | "refunded" | "void";
   used_at?: Date;
   pickup_note?: string;

@@ -4,13 +4,13 @@ export type TourOptionStatus = "open" | "full" | "closed" | "cancelled";
 
 export interface ITourOption extends Document {
   _id: Types.ObjectId;
-  tour_id: Types.ObjectId;           // -> Tour
-  start_date: Date;                  // ngày khởi hành (UTC 00:00)
-  start_time?: string;               // "08:00" | "19:30"... (HH:mm)
-  capacity_total: number;            // tổng chỗ
-  capacity_sold: number;             // đã bán
-  cut_off_hours?: number;            // khoá đặt trước giờ xuất phát (mặc định 2h)
-  status: TourOptionStatus;          // open | full | closed | cancelled
+  tour_id: Types.ObjectId;           
+  start_date: Date;                  
+  start_time?: string;               
+  capacity_total: number;            
+  capacity_sold: number;             
+  cut_off_hours?: number;            
+  status: TourOptionStatus;          
 
   createdAt: Date;
   updatedAt: Date;

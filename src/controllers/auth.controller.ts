@@ -3,9 +3,10 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { z } from "zod";
 import User from "../models/User";
-import { badRequest, notFound } from "../utils/ApiError";
+import { badRequest, notFound, forbidden } from "../utils/ApiError";
 import { env } from "../configs/env";
 import { AuthRequest } from "../middlewares/auth.middleware";
+import mongoose from "mongoose";
 
 // Simple phone rule (E.164-ish, linh hoạt, 8-15 số, cho phép + ở đầu)
 const phoneRegex = /^\+?[0-9]{8,15}$/;
@@ -41,6 +42,7 @@ export const register = async (req: Request, res: Response) => {
       phone: user.phone,
       address: user.address,
       role: user.role,
+      is_active: user.is_active,
     },
   });
 };
@@ -55,6 +57,10 @@ export const login = async (req: Request, res: Response) => {
   const valid = await bcrypt.compare(password, user.password_hash);
   if (!valid) throw badRequest("Invalid password");
 
+  if (!user.is_active) {
+    throw badRequest("Tài khoản của bạn đã bị vô hiệu hóa. Vui lòng liên hệ hỗ trợ.");
+  }
+
   const token = jwt.sign(
     { userId: user._id, email: user.email, role: user.role },
     env.JWT_SECRET as string,
@@ -67,9 +73,10 @@ export const login = async (req: Request, res: Response) => {
       id: user._id,
       name: user.name,
       email: user.email,
-      phone: user.phone,       // NEW
-      address: user.address,   // NEW
+      phone: user.phone,       
+      address: user.address,   
       role: user.role,
+      is_active: user.is_active,
     },
   });
 };
@@ -78,7 +85,7 @@ export const login = async (req: Request, res: Response) => {
 /** GET /auth/me */
 export const getProfile = async (req: AuthRequest, res: Response) => {
   const user = await User.findById(req.user!.userId)
-    .select("_id name email role phone address");
+    .select("_id name email role phone address is_active");
   res.json({ user });
 };
 
@@ -151,18 +158,27 @@ export const changePassword = async (req: AuthRequest, res: Response) => {
 };
 
 // (nếu bạn muốn lọc tìm kiếm/paginate sau này có thể mở rộng)
-const baseProjection = "_id name email role phone address createdAt";
+const baseProjection = "_id name email role phone address is_active createdAt";
 
-export const listUsers = async (_req: Request, res: Response) => {
-  const users = await User.find({ role: "user" }).select(baseProjection).sort({ createdAt: 1 }).lean();
+export const listUsers = async (req: Request, res: Response) => {
+  const q = String((req.query.q ?? "") as string).trim();
+  const match: any = { role: "user" };
+  if (q) {
+    const re = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
+    match.$or = [{ name: re }, { email: re }, { phone: re }, { address: re }];
+  }
+  const users = await User.find(match).select(baseProjection).sort({ createdAt: -1 }).lean();
   res.json(users);
 };
 
-export const listAdmins = async (_req: Request, res: Response) => {
-  const admins = await User.find({ role: "admin" })
-    .select(baseProjection)
-    .sort({ createdAt: 1 })
-    .lean();
+export const listAdmins = async (req: Request, res: Response) => {
+  const q = String((req.query.q ?? "") as string).trim();
+  const match: any = { role: "admin" };
+  if (q) {
+    const re = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
+    match.$or = [{ name: re }, { email: re }, { phone: re }, { address: re }];
+  }
+  const admins = await User.find(match).select(baseProjection).sort({ createdAt: -1 }).lean();
   res.json(admins);
 };
 
@@ -188,12 +204,57 @@ export const createAdmin = async (req: Request, res: Response) => {
   });
 
   res.status(201).json({
-    _id: user._id,
-    name: user.name,
-    email: user.email,
-    role: user.role,
-    phone: user.phone,
-    address: user.address,
-    createdAt: user.createdAt,
+    _id: user._id, name: user.name, email: user.email, role: user.role,
+    phone: user.phone, address: user.address, is_active: user.is_active, createdAt: user.createdAt,
   });
+};
+
+/** ---- BẬT/TẮT HOẠT ĐỘNG ---- */
+const setActiveSchema = z.object({ is_active: z.boolean() });
+export const setUserActive = async (req: AuthRequest, res: Response) => {
+  const { id } = req.params;
+  if (!mongoose.isValidObjectId(id)) throw badRequest("Invalid user id");
+  const { is_active } = setActiveSchema.parse(req.body);
+
+  const user = await User.findById(id);
+  if (!user) throw notFound("User not found");
+
+  // Không cho tự vô hiệu hóa chính mình
+  if (String(user._id) === String(req.user!.userId) && !is_active) {
+    throw forbidden("Bạn không thể tự vô hiệu hóa tài khoản của mình.");
+  }
+
+  // Không cho vô hiệu hóa admin cuối cùng
+  if (user.role === "admin" && !is_active) {
+    const admins = await User.countDocuments({ role: "admin", is_active: true, _id: { $ne: user._id } });
+    if (admins === 0) throw forbidden("Không thể vô hiệu hóa admin cuối cùng.");
+  }
+
+  user.is_active = is_active;
+  await user.save();
+  res.json({
+    _id: user._id, name: user.name, email: user.email, role: user.role,
+    phone: user.phone, address: user.address, is_active: user.is_active, createdAt: user.createdAt,
+  });
+};
+
+/** ---- XÓA USER ---- */
+export const deleteUser = async (req: AuthRequest, res: Response) => {
+  const { id } = req.params;
+  if (!mongoose.isValidObjectId(id)) throw badRequest("Invalid user id");
+  const user = await User.findById(id);
+  if (!user) throw notFound("User not found");
+
+  // không xóa chính mình
+  if (String(user._id) === String(req.user!.userId)) {
+    throw forbidden("Bạn không thể tự xóa tài khoản của mình.");
+  }
+  // không xóa admin cuối cùng
+  if (user.role === "admin") {
+    const otherAdmins = await User.countDocuments({ role: "admin", _id: { $ne: user._id } });
+    if (otherAdmins === 0) throw forbidden("Không thể xóa admin cuối cùng.");
+  }
+
+  await User.deleteOne({ _id: user._id });
+  res.json({ ok: true });
 };

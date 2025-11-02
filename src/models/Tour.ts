@@ -13,8 +13,6 @@ export interface ITour extends Document {
   policy?: string;
   rating_avg?: number;
   is_active: boolean;
-
-  /** NEW: danh sách POI tour sẽ ghé */
   poi_ids?: Types.ObjectId[];
 
   createdAt: Date;
@@ -34,8 +32,6 @@ const tourSchema = new Schema<ITour>(
     policy: String,
     rating_avg: { type: Number, default: 4.5 },
     is_active: { type: Boolean, default: true },
-
-    // NEW: danh sách POI
     poi_ids: [{ type: Schema.Types.ObjectId, ref: "POI", default: [] }],
   },
   { timestamps: true }

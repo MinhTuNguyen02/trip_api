@@ -2,9 +2,9 @@
 import { Schema, model, Types, Document } from "mongoose";
 
 export interface ICartItem {
-  _id: Types.ObjectId;         // <-- thêm dòng này
+  _id: Types.ObjectId;         
   type: "tour";
-  ref_id: Types.ObjectId;      // luôn là ObjectId
+  ref_id: Types.ObjectId;      
   option_id: Types.ObjectId;
   qty: number;
   unit_price: number;
@@ -23,7 +23,7 @@ const cartItemSchema = new Schema<ICartItem>(
     qty: { type: Number, required: true },
     unit_price: { type: Number, required: true }
   },
-  { _id: true } // subdocument có _id
+  { _id: true } 
 );
 
 const cartSchema = new Schema<ICart>(
