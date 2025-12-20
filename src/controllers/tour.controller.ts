@@ -17,12 +17,16 @@ const objectIdStr = z.string().min(8, "ObjectId không hợp lệ");
 // ---------- LIST ----------
 /** GET /tours */
 export const listTours = async (req: Request, res: Response) => {
-  const { destination, departure, minPrice, maxPrice } = req.query as {
+  const { destination, departure, minPrice, maxPrice, sort } = req.query as {
     destination?: string;
     departure?: string;
     minPrice?: string;
     maxPrice?: string;
+    sort?: string;
   };
+  const page = Math.max(1, parseInt((req.query.page ?? "1") as string));
+  const limit = Math.max(1, parseInt((req.query.limit ?? "12") as string));
+  const skip = (page - 1) * limit;
 
   const q: any = {};
   if (destination && destination.trim()) q.destination_id = destination;
@@ -30,8 +34,17 @@ export const listTours = async (req: Request, res: Response) => {
   if (minPrice) q.price = { ...(q.price || {}), $gte: Number(minPrice) };
   if (maxPrice) q.price = { ...(q.price || {}), $lte: Number(maxPrice) };
 
-  const items = await Tour.find(q).sort({ createdAt: -1 }).limit(100).lean();
-  res.json(items);
+  // Sort logic
+  let sortOpt: any = { createdAt: -1 };
+  if (sort === "rating_desc") sortOpt = { rating_avg: -1 };
+
+  const [items, total] = await Promise.all([
+    Tour.find(q).sort(sortOpt).skip(skip).limit(limit).lean(),
+    Tour.countDocuments(q)
+  ]);
+  res.json({
+    data: items, total, page, limit, totalPages: Math.ceil(total / limit)
+  });
 };
 
 // ---------- DETAIL ----------

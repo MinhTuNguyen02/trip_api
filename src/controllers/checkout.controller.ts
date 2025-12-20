@@ -166,7 +166,7 @@ async function finalizePayment(paymentId: Types.ObjectId) {
       contact_name: it.contact_name,
       contact_phone: it.contact_phone,
       note: it.address,
-      pickup_note: "Lên xe của Raumanian ở bến xe gần nhất",
+      pickup_note: "Lên xe của Tripify ở bến xe gần nhất",
     });
 
     const tickets = Array.from({ length: it.qty }, () => {
@@ -177,7 +177,7 @@ async function finalizePayment(paymentId: Types.ObjectId) {
         code,
         qr_payload: code,
         status: "valid",
-        pickup_note: "Lên xe của Raumanian ở bến xe gần nhất",
+        pickup_note: "Lên xe của Tripify ở bến xe gần nhất",
       };
     });
     await Ticket.insertMany(tickets);

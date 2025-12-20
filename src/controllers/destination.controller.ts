@@ -8,17 +8,50 @@ import { coerceBoolean } from "../utils/coerce";
 
 /** GET /destinations */
 export const listDestinations = async (req: Request, res: Response) => {
-  const region = typeof req.query.region === "string" ? req.query.region : undefined;
+  const { region, page, limit, sort } = req.query;
   const q: any = {};
-  if (region) q.region = region;
+  if (typeof region === "string") q.region = region;
 
-  const items = await Destination.find(q)
-    .collation({ locale: "vi", strength: 1 }) 
-    .sort({ name: 1 })
-    .limit(100)
-    .lean();
+  const pageNum = Math.max(1, Number(page) || 1);
+  const limitNum = Math.min(100, Math.max(1, Number(limit) || 100));
+  const skip = (pageNum - 1) * limitNum;
 
-  res.json(items);
+  // NEW: Sort by popularity (tour count)
+  if (sort === "popular") {
+    const [items, total] = await Promise.all([
+      Destination.aggregate([
+        { $match: q },
+        {
+          $lookup: {
+            from: "tours",
+            localField: "_id",
+            foreignField: "destination_id",
+            as: "tours_list"
+          }
+        },
+        { $addFields: { tourCount: { $size: "$tours_list" } } },
+        { $sort: { tourCount: -1 } },
+        { $skip: skip },
+        { $limit: limitNum },
+        { $project: { tours_list: 0, tourCount: 0 } }
+      ]),
+      Destination.countDocuments(q)
+    ]);
+    res.json({ items, total, page: pageNum, pages: Math.ceil(total / limitNum) });
+    return;
+  }
+
+  const [items, total] = await Promise.all([
+    Destination.find(q)
+      .collation({ locale: "vi", strength: 1 }) 
+      .sort({ name: 1 })
+      .skip(skip)
+      .limit(limitNum)
+      .lean(),
+    Destination.countDocuments(q)
+  ]);
+
+  res.json({ items, total, page: pageNum, pages: Math.ceil(total / limitNum) });
 };
 
 /** GET /destinations/:id */

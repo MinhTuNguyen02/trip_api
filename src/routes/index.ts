@@ -12,6 +12,7 @@ import paymentRouter from "./payments";
 import tourOptionRoutes from "./tourOption"
 import adminRoutes from "./adminBookings";
 import adminDashboardRouter from "./adminDashboard"
+import aiRouter from "./ai"
 const router = Router();
 
 /** Nhóm public routes trước */
@@ -30,6 +31,7 @@ router.use("/bookings", bookingRouter);
 
 router.use("/pois", poiRouter);
 router.use("/payments", paymentRouter);
+router.use("/ai", aiRouter);
 
 
 export default router;

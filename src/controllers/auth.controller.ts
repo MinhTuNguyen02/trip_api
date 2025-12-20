@@ -162,24 +162,38 @@ const baseProjection = "_id name email role phone address is_active createdAt";
 
 export const listUsers = async (req: Request, res: Response) => {
   const q = String((req.query.q ?? "") as string).trim();
+  const page = Math.max(1, parseInt((req.query.page ?? "1") as string));
+  const limit = Math.max(1, parseInt((req.query.limit ?? "12") as string));
+  const skip = (page - 1) * limit;
+
   const match: any = { role: "user" };
   if (q) {
     const re = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
     match.$or = [{ name: re }, { email: re }, { phone: re }, { address: re }];
   }
-  const users = await User.find(match).select(baseProjection).sort({ createdAt: -1 }).lean();
-  res.json(users);
+  const [users, total] = await Promise.all([
+    User.find(match).select(baseProjection).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+    User.countDocuments(match)
+  ]);
+  res.json({ data: users, total, page, limit, totalPages: Math.ceil(total / limit) });
 };
 
 export const listAdmins = async (req: Request, res: Response) => {
   const q = String((req.query.q ?? "") as string).trim();
+  const page = Math.max(1, parseInt((req.query.page ?? "1") as string));
+  const limit = Math.max(1, parseInt((req.query.limit ?? "12") as string));
+  const skip = (page - 1) * limit;
+
   const match: any = { role: "admin" };
   if (q) {
     const re = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
     match.$or = [{ name: re }, { email: re }, { phone: re }, { address: re }];
   }
-  const admins = await User.find(match).select(baseProjection).sort({ createdAt: -1 }).lean();
-  res.json(admins);
+  const [admins, total] = await Promise.all([
+    User.find(match).select(baseProjection).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+    User.countDocuments(match)
+  ]);
+  res.json({ data: admins, total, page, limit, totalPages: Math.ceil(total / limit) });
 };
 
 const createAdminSchema = z.object({

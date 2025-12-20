@@ -42,16 +42,26 @@ const updateSchema = z.object({
 
 export const listPOIs = async (req: Request, res: Response) => {
   const { destination, type } = req.query;
+  const page = Math.max(1, parseInt((req.query.page ?? "1") as string));
+  const limit = Math.max(1, parseInt((req.query.limit ?? "12") as string));
+  const skip = (page - 1) * limit;
+
   const q: any = {};
 
   if (typeof destination === "string" && mongoose.isValidObjectId(destination)) {
     q.destination_id = new mongoose.Types.ObjectId(destination);
   }
 
-  if (typeof type === "string") q.type = type;
+  if (typeof type === "string" && type) q.type = type;
 
-  const items = await POI.find(q).sort({ createdAt: -1 }).limit(200).lean();
-  res.json(items);
+  const [items, total] = await Promise.all([
+    POI.find(q).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+    POI.countDocuments(q)
+  ]);
+
+  res.json({
+    data: items, total, page, limit, totalPages: Math.ceil(total / limit)
+  });
 };
 
 export const getPOI = async (req: Request, res: Response) => {
