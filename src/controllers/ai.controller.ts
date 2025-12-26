@@ -15,11 +15,6 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 const geminiModel = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-// ==== CẤU HÌNH OLLAMA (Cho Chat) ====
-const RAW_HOST = process.env.OLLAMA_HOST || "http://127.0.0.1:11434";
-const OLLAMA_HOST = RAW_HOST.replace("localhost", "127.0.0.1");
-const OLLAMA_MODEL = process.env.OLLAMA_MODEL || "gemma3:4b";
-
 // ===================================================================
 // 1) Gợi ý lịch trình: DÙNG GEMINI + ĐỌC DATABASE (RAG)
 // ===================================================================
@@ -126,3 +121,4 @@ export const AiChatService = {
     }
   },
 };
+

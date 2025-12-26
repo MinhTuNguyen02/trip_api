@@ -11,8 +11,12 @@ export const OLLAMA_MODEL = process.env.OLLAMA_MODEL || "gemma3:4b";
 // axios instance ép IPv4
 const axiosOllama = axios.create({
   baseURL: OLLAMA_HOST,
-  httpAgent: new http.Agent({ family: 4 }),
-  httpsAgent: new https.Agent({ family: 4 }),
+  headers: {
+    "Content-Type": "application/json",
+    // Dòng này giúp bypass trang cảnh báo của Ngrok
+    "ngrok-skip-browser-warning": "true", 
+    "User-Agent": "Nodejs-Ollama-Client" // Đôi khi cần thêm User-Agent để tránh bị chặn
+  },
 });
 
 // ====== BUILD CONTEXT (giữ nguyên style cũ của bạn) ======
